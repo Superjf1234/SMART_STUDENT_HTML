@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Notificación Tarea Completa</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .button:hover {
+            background: #0056b3;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .info {
+            color: blue;
+            font-weight: bold;
+        }
+        .warning {
+            color: orange;
+            font-weight: bold;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .log-output {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test: Notificación Tarea Completa</h1>
+        
+        <div class="section">
+            <h2>🔧 Configuración del Test</h2>
+            <button class="button" onclick="setupTestData()">1. Configurar Datos de Test</button>
+            <button class="button" onclick="simulateStudentSubmission()">2. Simular Entrega de Estudiante</button>
+            <button class="button" onclick="checkNotifications()">3. Verificar Notificaciones</button>
+            <button class="button" onclick="clearData()">Limpiar Datos</button>
+        </div>
+
+        <div class="section">
+            <h2>📋 Resultados del Test</h2>
+            <div id="results" class="log-output"></div>
+        </div>
+
+        <div class="section">
+            <h2>🔍 Estado Actual</h2>
+            <div id="status" class="log-output"></div>
+        </div>
+    </div>
+
+    <script>
+        // Importar clases necesarias
+        class TaskNotificationManager {
+            static STORAGE_KEY = 'smart-student-task-notifications';
+
+            static getNotifications() {
+                const stored = localStorage.getItem(this.STORAGE_KEY);
+                return stored ? JSON.parse(stored) : [];
+            }
+
+            static saveNotifications(notifications) {
+                localStorage.setItem(this.STORAGE_KEY, JSON.stringify(notifications));
+            }
+
+            static createTaskCompletedNotification(
+                taskId,
+                taskTitle,
+                course,
+                subject,
+                teacherUsername,
+                taskType = 'assignment'
+            ) {
+                const notifications = this.getNotifications();
+                
+                // Verificar si ya existe una notificación de tarea completa para esta tarea
+                const existingNotification = notifications.find(n => 
+                    n.type === 'task_completed' && 
+                    n.taskId === taskId &&
+                    n.targetUsernames.includes(teacherUsername)
+                );
+                
+                if (existingNotification) {
+                    console.log(`⚠️ Ya existe notificación de tarea completa para taskId: ${taskId}`);
+                    return;
+                }
+                
+                const newNotification = {
+                    id: `completed_${taskId}_${Date.now()}`,
+                    type: 'task_completed',
+                    taskId,
+                    taskTitle,
+                    targetUserRole: 'teacher',
+                    targetUsernames: [teacherUsername],
+                    fromUsername: 'system',
+                    fromDisplayName: 'Estudiante',
+                    course,
+                    subject,
+                    timestamp: new Date().toISOString(),
+                    read: false,
+                    readBy: [],
+                    taskType
+                };
+
+                notifications.push(newNotification);
+                this.saveNotifications(notifications);
+                
+                console.log(`📢 Notificación de tarea completa creada para profesor: ${teacherUsername}`);
+                return newNotification;
+            }
+        }
+
+        function log(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'success' ? 'success' : 
+                            type === 'error' ? 'error' : 
+                            type === 'warning' ? 'warning' : 'info';
+            
+            resultsDiv.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        function updateStatus() {
+            const statusDiv = document.getElementById('status');
+            const tasks = JSON.parse(localStorage.getItem('smart-student-tasks') || '[]');
+            const comments = JSON.parse(localStorage.getItem('smart-student-task-comments') || '[]');
+            const notifications = TaskNotificationManager.getNotifications();
+            
+            statusDiv.innerHTML = `
+📊 Estado del Sistema:
+• Tareas: ${tasks.length}
+• Comentarios: ${comments.length}
+• Notificaciones: ${notifications.length}
+
+🔍 Notificaciones de Tarea Completa:
+${notifications.filter(n => n.type === 'task_completed').map(n => 
+    `• ${n.taskTitle} (ID: ${n.taskId}) - Para: ${n.targetUsernames.join(', ')}`
+).join('\n') || 'Ninguna'}
+            `.trim();
+        }
+
+        function setupTestData() {
+            log('🔧 Configurando datos de test...', 'info');
+            
+            // Configurar usuarios
+            const users = {
+                'jorge': {
+                    id: 'jorge',
+                    username: 'jorge',
+                    displayName: 'Jorge Profesor',
+                    role: 'teacher',
+                    activeCourses: ['id-1752016953657-kgo5vluck']
+                },
+                'felipe': {
+                    id: 'felipe',
+                    username: 'felipe',
+                    displayName: 'Felipe Estudiante',
+                    role: 'student',
+                    activeCourses: ['id-1752016953657-kgo5vluck']
+                }
+            };
+            
+            // Crear tarea de test
+            const testTask = {
+                id: 'test-task-' + Date.now(),
+                title: 'Tarea de Test',
+                description: 'Tarea para probar notificaciones',
+                course: 'id-1752016953657-kgo5vluck',
+                subject: 'Ciencias Naturales',
+                assignedById: 'jorge',
+                assignedByName: 'Jorge Profesor',
+                taskType: 'tarea',
+                status: 'pending',
+                dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+                createdAt: new Date().toISOString()
+            };
+            
+            localStorage.setItem('smart-student-users', JSON.stringify(users));
+            localStorage.setItem('smart-student-tasks', JSON.stringify([testTask]));
+            localStorage.setItem('smart-student-task-comments', JSON.stringify([]));
+            
+            // Configurar cursos
+            const courses = [
+                {
+                    id: 'id-1752016953657-kgo5vluck',
+                    name: '4TO BASICO'
+                }
+            ];
+            localStorage.setItem('smart-student-courses', JSON.stringify(courses));
+            
+            log('✅ Datos de test configurados:', 'success');
+            log(`• Profesor: jorge (Jorge Profesor)`, 'info');
+            log(`• Estudiante: felipe (Felipe Estudiante)`, 'info');
+            log(`• Tarea: ${testTask.title} (ID: ${testTask.id})`, 'info');
+            log(`• Curso: 4TO BASICO`, 'info');
+            
+            window.testTaskId = testTask.id;
+            updateStatus();
+        }
+
+        function simulateStudentSubmission() {
+            if (!window.testTaskId) {
+                log('❌ Error: Primero configura los datos de test', 'error');
+                return;
+            }
+            
+            log('📝 Simulando entrega de estudiante...', 'info');
+            
+            // Crear comentario de entrega
+            const submission = {
+                id: 'submission-' + Date.now(),
+                taskId: window.testTaskId,
+                studentId: 'felipe',
+                studentName: 'Felipe Estudiante',
+                comment: 'Aquí está mi tarea completa',
+                timestamp: new Date().toISOString(),
+                isSubmission: true,
+                attachments: []
+            };
+            
+            const comments = JSON.parse(localStorage.getItem('smart-student-task-comments') || '[]');
+            comments.push(submission);
+            localStorage.setItem('smart-student-task-comments', JSON.stringify(comments));
+            
+            log('✅ Entrega simulada creada', 'success');
+            
+            // Simular la lógica de verificación de entregas completas
+            const tasks = JSON.parse(localStorage.getItem('smart-student-tasks') || '[]');
+            const task = tasks.find(t => t.id === window.testTaskId);
+            
+            if (task) {
+                // Verificar si todos los estudiantes han entregado
+                const users = JSON.parse(localStorage.getItem('smart-student-users') || '{}');
+                const studentsInCourse = Object.values(users).filter(u => 
+                    u.role === 'student' && 
+                    u.activeCourses && 
+                    u.activeCourses.includes(task.course)
+                );
+                
+                const submissions = comments.filter(c => c.taskId === task.id && c.isSubmission);
+                const allStudentsSubmitted = studentsInCourse.every(student => 
+                    submissions.some(sub => sub.studentId === student.id)
+                );
+                
+                log(`📊 Verificación de entregas:`, 'info');
+                log(`• Estudiantes en curso: ${studentsInCourse.length}`, 'info');
+                log(`• Entregas recibidas: ${submissions.length}`, 'info');
+                log(`• Todos entregaron: ${allStudentsSubmitted ? 'SÍ' : 'NO'}`, allStudentsSubmitted ? 'success' : 'warning');
+                
+                if (allStudentsSubmitted) {
+                    // Crear notificación de tarea completa
+                    const notification = TaskNotificationManager.createTaskCompletedNotification(
+                        task.id,
+                        task.title,
+                        task.course,
+                        task.subject,
+                        task.assignedById,
+                        task.taskType === 'evaluacion' ? 'evaluation' : 'assignment'
+                    );
+                    
+                    if (notification) {
+                        log('🎉 Notificación de tarea completa creada exitosamente', 'success');
+                    }
+                } else {
+                    log('⏳ No todos los estudiantes han entregado aún', 'warning');
+                }
+            }
+            
+            updateStatus();
+        }
+
+        function checkNotifications() {
+            log('🔍 Verificando notificaciones...', 'info');
+            
+            const notifications = TaskNotificationManager.getNotifications();
+            const taskCompletedNotifications = notifications.filter(n => n.type === 'task_completed');
+            
+            log(`📢 Total de notificaciones: ${notifications.length}`, 'info');
+            log(`🎯 Notificaciones de tarea completa: ${taskCompletedNotifications.length}`, 'info');
+            
+            if (taskCompletedNotifications.length > 0) {
+                log('✅ Notificaciones de tarea completa encontradas:', 'success');
+                taskCompletedNotifications.forEach((notif, index) => {
+                    log(`${index + 1}. ${notif.taskTitle} - Para: ${notif.targetUsernames.join(', ')}`, 'info');
+                    log(`   Tipo: ${notif.taskType}, Curso: ${notif.course}`, 'info');
+                    log(`   Creada: ${new Date(notif.timestamp).toLocaleString()}`, 'info');
+                });
+            } else {
+                log('❌ No se encontraron notificaciones de tarea completa', 'error');
+            }
+            
+            updateStatus();
+        }
+
+        function clearData() {
+            localStorage.removeItem('smart-student-tasks');
+            localStorage.removeItem('smart-student-task-comments');
+            localStorage.removeItem('smart-student-users');
+            localStorage.removeItem('smart-student-courses');
+            localStorage.removeItem('smart-student-task-notifications');
+            
+            log('🧹 Datos limpiados', 'info');
+            window.testTaskId = null;
+            updateStatus();
+        }
+
+        // Inicializar al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStatus();
+        });
+    </script>
+</body>
+</html>

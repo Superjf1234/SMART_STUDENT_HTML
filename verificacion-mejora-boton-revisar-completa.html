@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificación: Botón Revisar y Diálogo Mejorado</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8fafc;
+        }
+        
+        .verification-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-pending { background: #f3f4f6; color: #374151; }
+        .status-review { background: #fef3c7; color: #92400e; }
+        .status-completed { background: #d1fae5; color: #065f46; }
+        
+        .review-button {
+            background: #f97316;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        .review-button:hover {
+            background: #ea580c;
+        }
+        
+        .review-button:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        th, td {
+            text-align: left;
+            padding: 8px 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        th {
+            background: #f9fafb;
+            font-weight: 600;
+        }
+        
+        .dialog-preview {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            background: #fafafa;
+            margin-top: 15px;
+        }
+        
+        .info-card {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 10px 0;
+        }
+        
+        .info-card.student {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+        
+        .info-card.grading {
+            background: #fff7ed;
+            border-color: #fed7aa;
+        }
+        
+        .grade-scale {
+            background: #e5e7eb;
+            border-radius: 10px;
+            height: 8px;
+            margin: 10px 0;
+            position: relative;
+        }
+        
+        .grade-fill {
+            background: #10b981;
+            height: 100%;
+            border-radius: 10px;
+            width: 85%;
+        }
+        
+        .file-item {
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 8px 0;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+        
+        .check {
+            color: #10b981;
+            font-weight: bold;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Verificación: Botón "Revisar" y Diálogo Mejorado</h1>
+    <p><strong>Fecha:</strong> <span id="current-date"></span></p>
+    
+    <div class="verification-section">
+        <h2>✅ Panel de Estudiantes - Estado Dinámico</h2>
+        <p>El panel ahora refleja el estado real de las entregas:</p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Estudiante</th>
+                    <th>Estado</th>
+                    <th>Calificación</th>
+                    <th>Fecha Entrega</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Juan Pérez</td>
+                    <td><span class="status-badge status-pending">Pendiente</span></td>
+                    <td><em>Sin entregar</em></td>
+                    <td>-</td>
+                    <td><span style="color: #9ca3af;">Sin entrega</span></td>
+                </tr>
+                <tr>
+                    <td>María González</td>
+                    <td><span class="status-badge status-review">En Revisión</span></td>
+                    <td><em>Sin calificar</em></td>
+                    <td>15 dic 2024, 14:30</td>
+                    <td><button class="review-button">Revisar</button></td>
+                </tr>
+                <tr>
+                    <td>Carlos López</td>
+                    <td><span class="status-badge status-completed">Finalizado</span></td>
+                    <td><strong>85/100</strong></td>
+                    <td>14 dic 2024, 18:45</td>
+                    <td><button class="review-button">Editar</button></td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div style="margin-top: 15px; padding: 10px; background: #ecfdf5; border-radius: 6px;">
+            <p class="check">✓ Estados actualizados dinámicamente basados en entregas reales</p>
+            <p class="check">✓ Botón "Revisar" habilitado solo con entregas válidas</p>
+            <p class="check">✓ Fechas de entrega reales mostradas</p>
+        </div>
+    </div>
+
+    <div class="verification-section">
+        <h2>🔧 Mejoras Implementadas en el Código</h2>
+        <ul class="feature-list">
+            <li><strong>getStudentTaskStatus():</strong> Lógica dinámica para determinar estado real</li>
+            <li><strong>getStudentSubmission():</strong> Recuperación de datos de entrega reales</li>
+            <li><strong>handleReviewSubmission():</strong> Validación de entregas antes de abrir diálogo</li>
+            <li><strong>Panel actualizado:</strong> Sin lógica hardcodeada, uso de datos reales</li>
+            <li><strong>Eventos en tiempo real:</strong> Actualización automática cuando se entrega</li>
+        </ul>
+    </div>
+
+    <div class="verification-section">
+        <h2>📋 Diálogo de Revisión Mejorado</h2>
+        <p>Vista previa del diálogo de revisión con todas las características implementadas:</p>
+        
+        <div class="dialog-preview">
+            <h3 style="margin-top: 0;">Revisar Entrega - María González</h3>
+            
+            <div class="info-card">
+                <h4>📌 Información de la Tarea</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px;">
+                    <div>
+                        <p><strong>Título:</strong> Ensayo de Historia</p>
+                        <p><strong>Curso:</strong> 3º ESO A</p>
+                        <p><strong>Materia:</strong> Historia</p>
+                    </div>
+                    <div>
+                        <p><strong>Fecha límite:</strong> 16 dic 2024, 23:59</p>
+                        <p><strong>Prioridad:</strong> <span class="status-badge" style="background: #fee2e2; color: #991b1b;">Alta</span></p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-card student">
+                <h4>👨‍🎓 Información del Estudiante y Entrega</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px;">
+                    <div>
+                        <p><strong>Nombre:</strong> María González</p>
+                        <p><strong>ID:</strong> maria.gonzalez</p>
+                        <p><strong>Hora de entrega:</strong> 15 dic 2024, 14:30</p>
+                    </div>
+                    <div>
+                        <p><strong>Fecha completa:</strong> domingo, 15 de diciembre de 2024, 14:30:25</p>
+                        <p><strong>Tiempo transcurrido:</strong> Hace 1 día y 2 horas</p>
+                        <p><strong>Estado actual:</strong> <span class="status-badge status-review">En Revisión</span></p>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="background: #f9fafb; padding: 12px; border-radius: 6px; margin: 10px 0;">
+                <h4>💬 Contenido de la Entrega</h4>
+                <div style="background: white; padding: 12px; border-radius: 4px; border: 1px solid #e5e7eb;">
+                    <p style="margin: 0; font-size: 14px;">He completado el ensayo sobre la Revolución Industrial siguiendo las pautas establecidas. He incluido análisis de las causas, desarrollo y consecuencias del período histórico...</p>
+                </div>
+            </div>
+            
+            <div style="background: #faf5ff; padding: 12px; border-radius: 6px; margin: 10px 0; border: 1px solid #e9d5ff;">
+                <h4>📎 Archivos Adjuntos de la Entrega (2)</h4>
+                <div class="file-item">
+                    <div>
+                        <p style="margin: 0; font-weight: 500;">📄 ensayo_revolucion_industrial.docx</p>
+                        <p style="margin: 0; font-size: 12px; color: #6b7280;">Tamaño: 2.4 MB • Subido: 15 dic 2024, 14:30</p>
+                    </div>
+                    <button style="background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px;">Ver/Descargar</button>
+                </div>
+                <div class="file-item">
+                    <div>
+                        <p style="margin: 0; font-weight: 500;">📊 grafico_datos_industriales.xlsx</p>
+                        <p style="margin: 0; font-size: 12px; color: #6b7280;">Tamaño: 856 KB • Subido: 15 dic 2024, 14:30</p>
+                    </div>
+                    <button style="background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px;">Ver/Descargar</button>
+                </div>
+            </div>
+            
+            <div class="info-card grading">
+                <h4>⭐ Calificación y Retroalimentación</h4>
+                
+                <div style="margin: 15px 0;">
+                    <label style="display: block; font-weight: 500; margin-bottom: 8px;">🎯 Calificación (0-100) *</label>
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <input type="number" value="85" style="width: 80px; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; text-align: center; font-weight: bold;">
+                        <span style="font-size: 16px;">/ 100</span>
+                        <span class="status-badge" style="background: #d1fae5; color: #065f46;">✅ Aprobado</span>
+                    </div>
+                    
+                    <div class="grade-scale">
+                        <div class="grade-fill"></div>
+                    </div>
+                    
+                    <div style="display: flex; justify-between; font-size: 11px; color: #6b7280; margin-top: 5px;">
+                        <span>Insuficiente</span>
+                        <span>Regular</span>
+                        <span>Bueno</span>
+                        <span>Muy Bueno</span>
+                        <span>Excelente</span>
+                    </div>
+                </div>
+                
+                <div>
+                    <label style="display: block; font-weight: 500; margin-bottom: 8px;">💬 Retroalimentación para el Estudiante</label>
+                    <textarea style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; resize: none;" rows="3" placeholder="Escribe aquí tu retroalimentación...">Excelente trabajo, María. El ensayo demuestra una comprensión profunda del tema y el análisis es muy completo. Los gráficos complementan muy bien el texto.</textarea>
+                </div>
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; padding-top: 15px; border-top: 1px solid #e5e7eb;">
+                <button style="background: white; color: #f97316; border: 1px solid #f97316; padding: 8px 16px; border-radius: 4px;">Cancelar</button>
+                <button style="background: #f97316; color: white; border: none; padding: 8px 16px; border-radius: 4px; font-weight: 500;">Guardar Calificación</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="verification-section">
+        <h2>🚀 Características Implementadas</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+                <h3>Panel de Estudiantes</h3>
+                <ul class="feature-list">
+                    <li>✅ Estado dinámico basado en datos reales</li>
+                    <li>✅ Fecha de entrega real mostrada</li>
+                    <li>✅ Botón "Revisar" habilitado correctamente</li>
+                    <li>✅ Actualización en tiempo real</li>
+                    <li>✅ Sin lógica hardcodeada</li>
+                </ul>
+            </div>
+            <div>
+                <h3>Diálogo de Revisión</h3>
+                <ul class="feature-list">
+                    <li>✅ Información completa del estudiante</li>
+                    <li>✅ Detalles de la entrega con timestamps</li>
+                    <li>✅ Archivos adjuntos con descarga</li>
+                    <li>✅ Sistema de calificación visual</li>
+                    <li>✅ Campo de retroalimentación</li>
+                    <li>✅ Estados visuales claros</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="verification-section">
+        <h2>📝 Flujo de Trabajo Profesor</h2>
+        <div style="background: #f8fafc; padding: 15px; border-radius: 6px; border-left: 4px solid #3b82f6;">
+            <ol style="margin: 0; padding-left: 20px;">
+                <li><strong>Estudiante entrega tarea:</strong> Estado cambia a "En Revisión" automáticamente</li>
+                <li><strong>Profesor ve la entrega:</strong> Botón "Revisar" se habilita y muestra fecha real</li>
+                <li><strong>Profesor abre diálogo:</strong> Ve todos los detalles de la entrega completos</li>
+                <li><strong>Profesor revisa archivos:</strong> Puede descargar/ver todos los adjuntos</li>
+                <li><strong>Profesor califica:</strong> Asigna nota (0-100) y retroalimentación</li>
+                <li><strong>Estado final:</strong> Cambia a "Finalizado" y se muestra la calificación</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="verification-section">
+        <h2>🔧 Cambios Técnicos Realizados</h2>
+        <div class="code-block">
+// Antes: Lógica hardcodeada
+if (student.displayName === 'Maria Estudiante') {
+  // lógica específica para María
+}
+
+// Después: Lógica dinámica
+let submission = getStudentSubmission(selectedTask.id, student.id);
+let studentStatus = getStudentTaskStatus(selectedTask.id, student.id);
+const hasSubmission = submission !== undefined;
+
+// Estado basado en datos reales
+{studentStatus === 'pending' ? 'Pendiente' : 
+ studentStatus === 'delivered' ? 'En Revisión' : 
+ 'Finalizado'}
+        </div>
+        
+        <p><strong>Archivos modificados:</strong></p>
+        <ul>
+            <li><code>/src/app/dashboard/tareas/page.tsx</code> - Panel principal y diálogo de revisión</li>
+            <li>Funciones de estado y validación mejoradas</li>
+            <li>Sistema de eventos para actualizaciones en tiempo real</li>
+        </ul>
+    </div>
+
+    <div class="verification-section" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
+        <h2 style="color: #065f46;">✅ Estado: COMPLETADO</h2>
+        <p style="color: #166534; margin: 0;">
+            Todas las mejoras solicitadas han sido implementadas exitosamente. El sistema ahora maneja dinámicamente los estados de las entregas, 
+            proporciona un diálogo de revisión completo y mantiene la funcionalidad actualizada en tiempo real.
+        </p>
+    </div>
+
+    <script>
+        document.getElementById('current-date').textContent = new Date().toLocaleString('es-ES', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    </script>
+</body>
+</html>

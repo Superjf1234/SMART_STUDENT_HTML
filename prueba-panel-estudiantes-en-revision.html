@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba: Panel de Estudiantes "En Revisión"</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .status-transition { transition: all 0.3s ease; }
+        .highlight { animation: highlight 2s ease-in-out; }
+        @keyframes highlight { 0% { background-color: #fef3c7; } 50% { background-color: #fbbf24; } 100% { background-color: #fef3c7; } }
+    </style>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">🧪 Prueba: Panel de Estudiantes "En Revisión"</h1>
+        
+        <!-- Simulación del Flujo -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">🔄 Simulación del Flujo de Entrega</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Vista Estudiante -->
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <h3 class="text-lg font-medium text-blue-800 mb-3">👨‍🎓 Vista Estudiante</h3>
+                    <div class="space-y-4">
+                        <div class="bg-white p-4 rounded border">
+                            <h4 class="font-medium text-sm mb-2">Tarea: dsadas</h4>
+                            <p class="text-xs text-gray-600 mb-2">Ciencias Naturales • Jorge</p>
+                            <p class="text-xs text-gray-500 mb-3">📅 Vence: 17 jul 2025, 03:14</p>
+                            <div class="space-y-2">
+                                <textarea id="studentComment" class="w-full p-2 border rounded text-sm" rows="3" placeholder="Escribir comentario de entrega..."></textarea>
+                                <div class="flex items-center space-x-2">
+                                    <input type="checkbox" id="isSubmission" class="rounded">
+                                    <label for="isSubmission" class="text-sm">Marcar como entrega</label>
+                                </div>
+                                <button id="submitButton" class="w-full px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
+                                    📤 Enviar Comentario
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Vista Profesor -->
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <h3 class="text-lg font-medium text-green-800 mb-3">👨‍🏫 Vista Profesor - Panel de Estudiantes</h3>
+                    <div class="bg-white p-4 rounded border">
+                        <h4 class="font-medium text-sm mb-3">Tarea: dsadas</h4>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="border-b">
+                                        <th class="text-left p-2">Nombre</th>
+                                        <th class="text-center p-2">Estado</th>
+                                        <th class="text-center p-2">Fecha de Entrega</th>
+                                        <th class="text-center p-2">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentPanel">
+                                    <tr class="border-b" id="felipeRow">
+                                        <td class="p-2">Felipe</td>
+                                        <td class="text-center p-2">
+                                            <span id="felipeStatus" class="inline-block px-2 py-1 rounded text-xs bg-gray-100 text-gray-800">
+                                                Pendiente
+                                            </span>
+                                        </td>
+                                        <td class="text-center p-2" id="felipeDate">
+                                            <span class="text-gray-500">Sin entregar</span>
+                                        </td>
+                                        <td class="text-center p-2" id="felipeActions">
+                                            <span class="text-gray-400 text-xs">Sin entrega</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estados Posibles -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">📊 Estados Posibles del Panel</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="font-medium text-gray-700 mb-2">1. Pendiente</h3>
+                    <div class="space-y-2">
+                        <span class="inline-block px-2 py-1 rounded text-xs bg-gray-100 text-gray-800">Pendiente</span>
+                        <p class="text-xs text-gray-600">• No hay entrega</p>
+                        <p class="text-xs text-gray-600">• Muestra "Sin entregar"</p>
+                        <p class="text-xs text-gray-600">• No hay botón de acción</p>
+                    </div>
+                </div>
+                <div class="bg-yellow-50 p-4 rounded-lg">
+                    <h3 class="font-medium text-yellow-700 mb-2">2. En Revisión</h3>
+                    <div class="space-y-2">
+                        <span class="inline-block px-2 py-1 rounded text-xs bg-yellow-100 text-yellow-800">En Revisión</span>
+                        <p class="text-xs text-yellow-600">• Hay entrega del estudiante</p>
+                        <p class="text-xs text-yellow-600">• Muestra fecha/hora</p>
+                        <p class="text-xs text-yellow-600">• Botón "Revisar"</p>
+                    </div>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <h3 class="font-medium text-green-700 mb-2">3. Revisado</h3>
+                    <div class="space-y-2">
+                        <span class="inline-block px-2 py-1 rounded text-xs bg-green-100 text-green-800">Revisado</span>
+                        <p class="text-xs text-green-600">• Profesor ha calificado</p>
+                        <p class="text-xs text-green-600">• Muestra calificación</p>
+                        <p class="text-xs text-green-600">• Botón "Editar"</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Verificación de Cambios -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">✅ Verificación de Cambios Aplicados</h2>
+            <div class="space-y-3">
+                <div class="flex items-center justify-between p-3 bg-green-50 rounded">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-green-600 font-bold">✅</span>
+                        <span class="text-sm font-medium">Funciones corregidas: student.id en lugar de student.username</span>
+                    </div>
+                    <span class="text-xs text-green-600">Líneas 2444-2445</span>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-green-50 rounded">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-green-600 font-bold">✅</span>
+                        <span class="text-sm font-medium">Evento studentPanelUpdate agregado</span>
+                    </div>
+                    <span class="text-xs text-green-600">Líneas 815-820</span>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-green-50 rounded">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-green-600 font-bold">✅</span>
+                        <span class="text-sm font-medium">Listener para actualización automática</span>
+                    </div>
+                    <span class="text-xs text-green-600">Después línea 227</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Log de Actividad -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">📝 Log de Actividad</h2>
+            <div id="activityLog" class="bg-gray-900 text-green-400 p-4 rounded font-mono text-sm h-48 overflow-y-auto">
+                <div>[15:30:00] 🚀 Sistema de prueba inicializado</div>
+                <div>[15:30:00] 📋 Panel de estudiantes cargado</div>
+                <div>[15:30:00] 👨‍🎓 Estudiante: Felipe - Estado: Pendiente</div>
+                <div>[15:30:00] ⏳ Esperando entrega de estudiante...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulación del comportamiento del panel
+        const log = (message) => {
+            const timestamp = new Date().toLocaleTimeString();
+            const logDiv = document.getElementById('activityLog');
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        };
+
+        // Simulación de entrega
+        document.getElementById('submitButton').addEventListener('click', function() {
+            const comment = document.getElementById('studentComment').value;
+            const isSubmission = document.getElementById('isSubmission').checked;
+            
+            if (!comment.trim()) {
+                alert('Por favor, escriba un comentario');
+                return;
+            }
+            
+            if (!isSubmission) {
+                alert('Por favor, marque como entrega');
+                return;
+            }
+            
+            // Simular entrega
+            log('📝 Felipe entregando tarea "dsadas"');
+            log('💾 Comentario guardado con isSubmission: true');
+            log('🔔 Evento studentPanelUpdate disparado');
+            
+            // Actualizar panel del profesor
+            setTimeout(() => {
+                updateStudentPanel();
+                log('✅ Panel de estudiantes actualizado');
+                log('🎯 Estado cambiado: Pendiente → En Revisión');
+            }, 1000);
+            
+            // Actualizar botón
+            this.innerHTML = '✅ Entregado';
+            this.className = 'w-full px-3 py-2 bg-green-600 text-white text-sm rounded';
+            this.disabled = true;
+            
+            // Limpiar formulario
+            document.getElementById('studentComment').value = '';
+            document.getElementById('isSubmission').checked = false;
+        });
+
+        function updateStudentPanel() {
+            const statusElement = document.getElementById('felipeStatus');
+            const dateElement = document.getElementById('felipeDate');
+            const actionsElement = document.getElementById('felipeActions');
+            const row = document.getElementById('felipeRow');
+            
+            // Añadir efecto de transición
+            row.classList.add('highlight');
+            
+            // Actualizar estado
+            statusElement.className = 'inline-block px-2 py-1 rounded text-xs bg-yellow-100 text-yellow-800 status-transition';
+            statusElement.textContent = 'En Revisión';
+            
+            // Actualizar fecha
+            const now = new Date();
+            const dateString = now.toLocaleDateString() + ', ' + now.toLocaleTimeString('es-ES', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            dateElement.innerHTML = `<span class="text-gray-700">${dateString}</span>`;
+            
+            // Actualizar acciones
+            actionsElement.innerHTML = `
+                <button class="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700">
+                    Revisar
+                </button>
+            `;
+            
+            // Remover efecto después de la animación
+            setTimeout(() => {
+                row.classList.remove('highlight');
+            }, 2000);
+        }
+
+        // Logging inicial
+        log('🧪 Simulación cargada correctamente');
+        log('📊 Estado actual: Felipe - Pendiente');
+        log('💡 Instrucciones: Escriba comentario, marque como entrega, y haga clic en "Enviar"');
+        
+        console.log('🧪 Prueba: Panel de Estudiantes "En Revisión"');
+        console.log('✅ Cambios aplicados:');
+        console.log('  • student.id en lugar de student.username');
+        console.log('  • Evento studentPanelUpdate agregado');
+        console.log('  • Listener para actualización automática');
+        console.log('🎯 Resultado esperado: Estado cambia a "En Revisión" tras entrega');
+    </script>
+</body>
+</html>

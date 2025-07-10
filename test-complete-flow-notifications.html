@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Completo - Flujo Notificación Tarea Completa</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .button:hover {
+            background: #0056b3;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .info {
+            color: blue;
+            font-weight: bold;
+        }
+        .warning {
+            color: orange;
+            font-weight: bold;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .log-output {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .step {
+            background: #e9ecef;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Completo: Flujo Notificación Tarea Completa</h1>
+        
+        <div class="section">
+            <h2>🔧 Configuración y Test</h2>
+            <button class="button" onclick="setupCompleteTest()">1. Configurar Test Completo</button>
+            <button class="button" onclick="runCompleteFlow()">2. Ejecutar Flujo Completo</button>
+            <button class="button" onclick="verifyNotifications()">3. Verificar Notificaciones</button>
+            <button class="button" onclick="clearAll()">Limpiar Todo</button>
+        </div>
+
+        <div class="section">
+            <h2>📋 Resultados del Test</h2>
+            <div id="results" class="log-output"></div>
+        </div>
+
+        <div class="section">
+            <h2>🔍 Estado del Sistema</h2>
+            <div id="status" class="log-output"></div>
+        </div>
+
+        <div class="section">
+            <h2>📝 Pasos del Test</h2>
+            <div id="steps"></div>
+        </div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'success' ? 'success' : 
+                            type === 'error' ? 'error' : 
+                            type === 'warning' ? 'warning' : 'info';
+            
+            resultsDiv.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        function addStep(stepNumber, title, details) {
+            const stepsDiv = document.getElementById('steps');
+            const stepDiv = document.createElement('div');
+            stepDiv.className = 'step';
+            stepDiv.innerHTML = `
+                <h4>${stepNumber}. ${title}</h4>
+                <p>${details}</p>
+            `;
+            stepsDiv.appendChild(stepDiv);
+        }
+
+        function updateStatus() {
+            const statusDiv = document.getElementById('status');
+            const tasks = JSON.parse(localStorage.getItem('smart-student-tasks') || '[]');
+            const comments = JSON.parse(localStorage.getItem('smart-student-task-comments') || '[]');
+            const notifications = JSON.parse(localStorage.getItem('smart-student-task-notifications') || '[]');
+            const users = JSON.parse(localStorage.getItem('smart-student-users') || '{}');
+            
+            statusDiv.innerHTML = `
+📊 Estado del Sistema:
+• Tareas: ${tasks.length}
+• Comentarios: ${comments.length}
+• Notificaciones: ${notifications.length}
+• Usuarios: ${Object.keys(users).length}
+
+🔍 Notificaciones por tipo:
+${Object.entries(
+    notifications.reduce((acc, n) => {
+        acc[n.type] = (acc[n.type] || 0) + 1;
+        return acc;
+    }, {})
+).map(([type, count]) => `• ${type}: ${count}`).join('\n') || 'Ninguna'}
+
+🎯 Notificaciones task_completed:
+${notifications.filter(n => n.type === 'task_completed').map(n => 
+    `• ${n.taskTitle} para ${n.targetUsernames.join(', ')}`
+).join('\n') || 'Ninguna'}
+            `.trim();
+        }
+
+        function setupCompleteTest() {
+            log('🔧 Configurando test completo...', 'info');
+            addStep(1, 'Configurar Usuarios', 'Creando profesor Jorge y estudiante Felipe');
+            
+            // Limpiar datos previos
+            localStorage.removeItem('smart-student-tasks');
+            localStorage.removeItem('smart-student-task-comments');
+            localStorage.removeItem('smart-student-task-notifications');
+            
+            // Configurar usuarios
+            const users = {
+                'jorge': {
+                    id: 'jorge',
+                    username: 'jorge',
+                    displayName: 'Jorge Profesor',
+                    role: 'teacher',
+                    activeCourses: ['id-1752016953657-kgo5vluck']
+                },
+                'felipe': {
+                    id: 'felipe',
+                    username: 'felipe',
+                    displayName: 'Felipe Estudiante',
+                    role: 'student',
+                    activeCourses: ['id-1752016953657-kgo5vluck']
+                }
+            };
+            
+            localStorage.setItem('smart-student-users', JSON.stringify(users));
+            
+            // Configurar cursos
+            const courses = [
+                {
+                    id: 'id-1752016953657-kgo5vluck',
+                    name: '4TO BASICO'
+                }
+            ];
+            localStorage.setItem('smart-student-courses', JSON.stringify(courses));
+            
+            // Crear tarea de test
+            const testTask = {
+                id: 'test-task-' + Date.now(),
+                title: 'Tarea de Test para Notificaciones',
+                description: 'Tarea para probar notificaciones de completado',
+                course: 'id-1752016953657-kgo5vluck',
+                subject: 'Ciencias Naturales',
+                assignedById: 'jorge',
+                assignedByName: 'Jorge Profesor',
+                assignedTo: 'course', // ← IMPORTANTE: Asignada a curso completo
+                taskType: 'tarea',
+                status: 'pending',
+                dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+                createdAt: new Date().toISOString()
+            };
+            
+            localStorage.setItem('smart-student-tasks', JSON.stringify([testTask]));
+            localStorage.setItem('smart-student-task-comments', JSON.stringify([]));
+            localStorage.setItem('smart-student-task-notifications', JSON.stringify([]));
+            
+            addStep(2, 'Crear Tarea', `Tarea "${testTask.title}" creada y asignada a curso 4TO BASICO`);
+            
+            log('✅ Test completo configurado:', 'success');
+            log(`• Profesor: jorge (Jorge Profesor)`, 'info');
+            log(`• Estudiante: felipe (Felipe Estudiante)`, 'info');
+            log(`• Tarea: ${testTask.title}`, 'info');
+            log(`• Curso: 4TO BASICO`, 'info');
+            log(`• Asignación: ${testTask.assignedTo}`, 'info');
+            
+            window.testTaskId = testTask.id;
+            updateStatus();
+        }
+
+        function runCompleteFlow() {
+            if (!window.testTaskId) {
+                log('❌ Error: Primero configura el test completo', 'error');
+                return;
+            }
+            
+            log('🚀 Ejecutando flujo completo...', 'info');
+            addStep(3, 'Simular Entrega', 'Estudiante Felipe entrega la tarea');
+            
+            const tasks = JSON.parse(localStorage.getItem('smart-student-tasks') || '[]');
+            const task = tasks.find(t => t.id === window.testTaskId);
+            
+            if (!task) {
+                log('❌ Error: Tarea no encontrada', 'error');
+                return;
+            }
+            
+            // Simular entrega del estudiante
+            const submission = {
+                id: 'submission-' + Date.now(),
+                taskId: window.testTaskId,
+                studentId: 'felipe',
+                studentName: 'Felipe Estudiante',
+                comment: 'Aquí está mi tarea completa',
+                timestamp: new Date().toISOString(),
+                isSubmission: true,
+                attachments: []
+            };
+            
+            const comments = JSON.parse(localStorage.getItem('smart-student-task-comments') || '[]');
+            comments.push(submission);
+            localStorage.setItem('smart-student-task-comments', JSON.stringify(comments));
+            
+            log('✅ Entrega simulada creada', 'success');
+            
+            // Simular la verificación de "todos han entregado"
+            addStep(4, 'Verificar Entregas', 'Verificando si todos los estudiantes han entregado');
+            
+            const users = JSON.parse(localStorage.getItem('smart-student-users') || '{}');
+            
+            // Simular getStudentsFromCourseRelevantToTask
+            const studentsInCourse = Object.values(users).filter(u => 
+                u.role === 'student' && 
+                u.activeCourses && 
+                u.activeCourses.includes(task.course)
+            );
+            
+            log(`👥 Estudiantes en curso: ${studentsInCourse.length}`, 'info');
+            studentsInCourse.forEach(student => {
+                log(`  - ${student.displayName} (${student.id})`, 'info');
+            });
+            
+            // Verificar entregas
+            const submissions = comments.filter(c => c.taskId === task.id && c.isSubmission);
+            log(`📝 Entregas: ${submissions.length}`, 'info');
+            
+            // Verificar si todos han entregado
+            const allSubmitted = studentsInCourse.every(student => 
+                submissions.some(sub => sub.studentId === student.id)
+            );
+            
+            log(`🎯 ¿Todos han entregado? ${allSubmitted}`, allSubmitted ? 'success' : 'warning');
+            
+            if (allSubmitted) {
+                addStep(5, 'Crear Notificación', 'Todos han entregado, creando notificación de tarea completa');
+                
+                // Simular TaskNotificationManager.createTaskCompletedNotification
+                const notifications = JSON.parse(localStorage.getItem('smart-student-task-notifications') || '[]');
+                
+                const newNotification = {
+                    id: `completed_${task.id}_${Date.now()}`,
+                    type: 'task_completed',
+                    taskId: task.id,
+                    taskTitle: task.title,
+                    targetUserRole: 'teacher',
+                    targetUsernames: [task.assignedById],
+                    fromUsername: 'system',
+                    fromDisplayName: 'Estudiante',
+                    course: task.course,
+                    subject: task.subject,
+                    timestamp: new Date().toISOString(),
+                    read: false,
+                    readBy: [],
+                    taskType: task.taskType === 'evaluacion' ? 'evaluation' : 'assignment'
+                };
+                
+                notifications.push(newNotification);
+                localStorage.setItem('smart-student-task-notifications', JSON.stringify(notifications));
+                
+                log('🎉 Notificación de tarea completa creada:', 'success');
+                log(`  - ID: ${newNotification.id}`, 'info');
+                log(`  - Para: ${newNotification.targetUsernames.join(', ')}`, 'info');
+                log(`  - Tipo: ${newNotification.taskType}`, 'info');
+                log(`  - Timestamp: ${new Date(newNotification.timestamp).toLocaleString()}`, 'info');
+                
+                addStep(6, 'Verificar Panel', 'La notificación debe aparecer en el panel del profesor');
+                
+            } else {
+                log('⏳ No todos han entregado aún', 'warning');
+            }
+            
+            updateStatus();
+        }
+
+        function verifyNotifications() {
+            log('🔍 Verificando notificaciones...', 'info');
+            
+            const notifications = JSON.parse(localStorage.getItem('smart-student-task-notifications') || '[]');
+            const taskCompletedNotifications = notifications.filter(n => n.type === 'task_completed');
+            
+            log(`📢 Total notificaciones: ${notifications.length}`, 'info');
+            log(`🎯 Notificaciones task_completed: ${taskCompletedNotifications.length}`, 'info');
+            
+            if (taskCompletedNotifications.length > 0) {
+                log('✅ Notificaciones encontradas:', 'success');
+                taskCompletedNotifications.forEach((notif, index) => {
+                    log(`${index + 1}. ${notif.taskTitle}`, 'success');
+                    log(`   - Para: ${notif.targetUsernames.join(', ')}`, 'info');
+                    log(`   - Tipo: ${notif.taskType}`, 'info');
+                    log(`   - Leída: ${notif.read}`, 'info');
+                    log(`   - Timestamp: ${new Date(notif.timestamp).toLocaleString()}`, 'info');
+                });
+                
+                log('📋 Instrucciones:', 'info');
+                log('1. Ir a http://localhost:9002', 'info');
+                log('2. Iniciar sesión como profesor Jorge', 'info');
+                log('3. Hacer clic en la campana de notificaciones', 'info');
+                log('4. Buscar sección "Tareas Completadas" (verde)', 'info');
+                log('5. Verificar que aparezca la notificación', 'info');
+                
+            } else {
+                log('❌ No se encontraron notificaciones de tarea completa', 'error');
+                log('🔧 Revisa los logs de la consola del navegador', 'warning');
+            }
+            
+            updateStatus();
+        }
+
+        function clearAll() {
+            localStorage.removeItem('smart-student-tasks');
+            localStorage.removeItem('smart-student-task-comments');
+            localStorage.removeItem('smart-student-task-notifications');
+            localStorage.removeItem('smart-student-users');
+            localStorage.removeItem('smart-student-courses');
+            
+            log('🧹 Todos los datos han sido limpiados', 'info');
+            document.getElementById('steps').innerHTML = '';
+            window.testTaskId = null;
+            updateStatus();
+        }
+
+        // Inicializar al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStatus();
+        });
+    </script>
+</body>
+</html>

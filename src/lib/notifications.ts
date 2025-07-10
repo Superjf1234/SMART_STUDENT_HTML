@@ -232,7 +232,7 @@ export class TaskNotificationManager {
       taskId,
       taskTitle,
       targetUserRole: 'student',
-      targetUsernames, // ✅ Ya filtrado para excluir al profesor
+      targetUsernames: targetUsernames, // ✅ Ya filtrado para excluir al profesor
       fromUsername: teacherUsername,
       fromDisplayName: teacherDisplayName,
       course,
@@ -263,7 +263,16 @@ export class TaskNotificationManager {
     studentDisplayName: string,
     teacherUsername: string
   ): void {
+    console.log('=== DEBUG createTaskSubmissionNotification ===');
+    console.log('TaskId:', taskId);
+    console.log('TaskTitle:', taskTitle);
+    console.log('Course:', course);
+    console.log('Subject:', subject);
+    console.log('Student:', studentDisplayName, '(', studentUsername, ')');
+    console.log('Teacher:', teacherUsername);
+    
     const notifications = this.getNotifications();
+    console.log('Current notifications count before creation:', notifications.length);
     
     const newNotification: TaskNotification = {
       id: `submission_${taskId}_${studentUsername}_${Date.now()}`,
@@ -282,7 +291,19 @@ export class TaskNotificationManager {
     };
 
     notifications.push(newNotification);
+    console.log('Task submission notification created:', newNotification);
+    console.log('Total notifications after creation:', notifications.length);
+    
     this.saveNotifications(notifications);
+    console.log('Task submission notification saved to localStorage');
+    
+    // Verificar que se guardó correctamente
+    const savedNotifications = this.getNotifications();
+    console.log('Verified saved notifications count:', savedNotifications.length);
+    
+    // Trigger event to update UI
+    window.dispatchEvent(new CustomEvent('taskNotificationsUpdated'));
+    console.log('taskNotificationsUpdated event dispatched');
   }
 
   // Crear notificación cuando una tarea se completa (todos los estudiantes entregaron)
@@ -488,19 +509,11 @@ export class TaskNotificationManager {
   static getUnreadCountForUser(username: string, userRole: 'student' | 'teacher'): number {
     const unreadNotifications = this.getUnreadNotificationsForUser(username, userRole);
     
-    // Para profesores, contar todas las notificaciones incluyendo pending_grading y task_completed
+    // Para profesores, contar TODAS las notificaciones sin filtros adicionales
     if (userRole === 'teacher') {
-      // Asegurar que se incluyen las notificaciones de tipo pending_grading y task_completed
-      const notificationCount = unreadNotifications.filter(n => 
-        n.type === 'pending_grading' || 
-        n.type === 'task_completed' || 
-        n.type === 'teacher_comment' ||
-        (n.type === 'new_task' && n.fromUsername === username) // Notificaciones de tareas creadas por este profesor
-      ).length;
-      
-      console.log(`[TaskNotificationManager] Teacher ${username} has ${notificationCount} notifications (including ${unreadNotifications.filter(n => n.type === 'pending_grading').length} pending_grading and ${unreadNotifications.filter(n => n.type === 'task_completed').length} task_completed)`);
-      
-      return notificationCount;
+      console.log(`[getUnreadCountForUser] Profesor ${username}: ${unreadNotifications.length} notificaciones no leídas`);
+      console.log(`[getUnreadCountForUser] Tipos de notificaciones:`, unreadNotifications.map(n => n.type));
+      return unreadNotifications.length;
     }
     
     // Para estudiantes, excluir notificaciones de comentarios (teacher_comment)
@@ -1109,44 +1122,106 @@ export class TaskNotificationManager {
     const notifications = this.getNotifications();
     let notificationUpdated = false;
     
-    const updatedNotifications = notifications.map(notification => {
-      // Buscar la notificación de tarea pendiente para este profesor y tarea
-      if (notification.taskId === taskId && 
-          notification.type === 'pending_grading' && 
-          notification.targetUsernames.includes(teacherUsername)) {
-        
-        // Si la tarea está finalizada (todos los estudiantes han sido revisados)
-        if (newStatus === 'reviewed') {
-          // Marcar la notificación como leída/finalizada
-          notification.read = true;
-          notification.readBy = [...notification.readBy, teacherUsername];
-          notification.fromDisplayName = `Tarea Finalizada: ${notification.taskTitle}`;
+    // Si la tarea está finalizada, eliminar notificaciones pendientes
+    if (newStatus === 'reviewed') {
+      const filteredNotifications = notifications.filter(notification => {
+        // Eliminar notificaciones de tarea pendiente para este profesor y tarea
+        if (notification.taskId === taskId && 
+            notification.type === 'pending_grading' && 
+            notification.targetUsernames.includes(teacherUsername)) {
+          console.log('✅ Removing pending grading notification:', notification.id);
           notificationUpdated = true;
-          console.log('✅ Notification marked as finalized:', notification.id);
-        } else {
-          // Mantener como pendiente con estado actualizado
+          return false; // Eliminar esta notificación
+        }
+        return true; // Mantener otras notificaciones
+      });
+      
+      if (notificationUpdated) {
+        this.saveNotifications(filteredNotifications);
+        console.log('✅ Pending grading notifications removed for finalized task');
+      }
+    } else {
+      // Para otros estados, solo actualizar el display name
+      const updatedNotifications = notifications.map(notification => {
+        if (notification.taskId === taskId && 
+            notification.type === 'pending_grading' && 
+            notification.targetUsernames.includes(teacherUsername)) {
           notification.fromDisplayName = `Tarea ${this.getStatusText(newStatus)}: ${notification.taskTitle}`;
           notificationUpdated = true;
           console.log('🔄 Notification status updated:', notification.id);
         }
+        return notification;
+      });
+      
+      if (notificationUpdated) {
+        this.saveNotifications(updatedNotifications);
+        console.log('✅ Task status notification updated successfully');
       }
-      return notification;
-    });
-    
-    if (notificationUpdated) {
-      this.saveNotifications(updatedNotifications);
-      console.log('✅ Task status notification updated successfully');
     }
   }
 
-  // Helper para obtener texto del estado
-  static getStatusText(status: string): string {
-    switch (status) {
-      case 'pending': return 'Pendiente';
-      case 'submitted': return 'Entregada';
-      case 'delivered': return 'En Revisión';
-      case 'reviewed': return 'Finalizada';
-      default: return 'Pendiente';
+  // Eliminar notificaciones de entregas de tareas cuando el profesor las revisa
+  static removeTaskSubmissionNotifications(
+    taskId: string,
+    teacherUsername: string
+  ): void {
+    console.log('=== DEBUG removeTaskSubmissionNotifications ===');
+    console.log('TaskId:', taskId, 'Teacher:', teacherUsername);
+    
+    const notifications = this.getNotifications();
+    const initialCount = notifications.length;
+    
+    const filteredNotifications = notifications.filter(notification => {
+      // Eliminar notificaciones de entregas de tareas para este profesor y tarea
+      if (notification.taskId === taskId && 
+          notification.type === 'task_submission' && 
+          notification.targetUsernames.includes(teacherUsername)) {
+        console.log('✅ Removing task submission notification:', notification.id, 'from', notification.fromDisplayName);
+        return false; // Eliminar esta notificación
+      }
+      return true; // Mantener otras notificaciones
+    });
+    
+    const removedCount = initialCount - filteredNotifications.length;
+    console.log(`Removed ${removedCount} task submission notifications`);
+    
+    if (removedCount > 0) {
+      this.saveNotifications(filteredNotifications);
+      console.log('✅ Task submission notifications removed successfully');
     }
   }
-}
+
+  // Eliminar notificación individual de entrega cuando el profesor califica a un estudiante específico
+  static removeIndividualTaskSubmissionNotification(
+    taskId: string,
+    studentUsername: string,
+    teacherUsername: string
+  ): void {
+    console.log('=== DEBUG removeIndividualTaskSubmissionNotification ===');
+    console.log('TaskId:', taskId, 'Student:', studentUsername, 'Teacher:', teacherUsername);
+    
+    const notifications = this.getNotifications();
+    const initialCount = notifications.length;
+    
+    const filteredNotifications = notifications.filter(notification => {
+      // Eliminar notificación específica de entrega de este estudiante
+      if (notification.taskId === taskId && 
+          notification.type === 'task_submission' && 
+          notification.fromUsername === studentUsername &&
+          notification.targetUsernames.includes(teacherUsername)) {
+        console.log('✅ Removing individual task submission notification:', notification.id, 'from student:', studentUsername);
+        return false; // Eliminar esta notificación
+      }
+      return true; // Mantener otras notificaciones
+    });
+    
+    const removedCount = initialCount - filteredNotifications.length;
+    console.log(`Removed ${removedCount} individual task submission notification`);
+    
+    if (removedCount > 0) {
+      this.saveNotifications(filteredNotifications);
+      console.log('✅ Individual task submission notification removed successfully');
+    }
+  }
+
+  // ...existing code...

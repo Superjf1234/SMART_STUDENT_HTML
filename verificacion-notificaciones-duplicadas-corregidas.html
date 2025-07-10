@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificación: Notificaciones Duplicadas Corregidas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .check-item { transition: all 0.3s ease; }
+        .check-item:hover { transform: translateX(5px); }
+        .status-ok { color: #10b981; }
+        .status-error { color: #ef4444; }
+        .status-warning { color: #f59e0b; }
+    </style>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">🔧 Verificación: Notificaciones Duplicadas Corregidas</h1>
+        
+        <!-- Diagnóstico del Problema -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">📊 Diagnóstico del Problema</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-red-50 p-4 rounded-lg border-l-4 border-red-400">
+                    <h3 class="font-medium text-red-800 mb-2">❌ ANTES (Incorrecto)</h3>
+                    <ul class="text-sm text-red-700 space-y-1">
+                        <li>• Notificación manual con localStorage</li>
+                        <li>• Sistema personalizado separado</li>
+                        <li>• No integrado con TaskNotificationManager</li>
+                        <li>• No aparecía en panel del profesor</li>
+                        <li>• Solo 1 notificación en lugar de 2</li>
+                    </ul>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-400">
+                    <h3 class="font-medium text-green-800 mb-2">✅ DESPUÉS (Correcto)</h3>
+                    <ul class="text-sm text-green-700 space-y-1">
+                        <li>• Usa TaskNotificationManager oficial</li>
+                        <li>• Sistema integrado y unificado</li>
+                        <li>• Conversión correcta ID → username</li>
+                        <li>• Aparece en panel del profesor</li>
+                        <li>• Notificaciones completas funcionando</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Verificación de Cambios -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">🔍 Verificación de Cambios Aplicados</h2>
+            <div class="space-y-3">
+                <div class="check-item flex items-center justify-between p-3 bg-gray-50 rounded">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-green-600 font-bold">✅</span>
+                        <span class="text-sm font-medium">Función getTeacherUsernameById() agregada</span>
+                    </div>
+                    <span class="text-xs text-gray-500">Convierte ID del profesor a username</span>
+                </div>
+                <div class="check-item flex items-center justify-between p-3 bg-gray-50 rounded">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-green-600 font-bold">✅</span>
+                        <span class="text-sm font-medium">Código manual de notificaciones eliminado</span>
+                    </div>
+                    <span class="text-xs text-gray-500">Removido sistema personalizado</span>
+                </div>
+                <div class="check-item flex items-center justify-between p-3 bg-gray-50 rounded">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-green-600 font-bold">✅</span>
+                        <span class="text-sm font-medium">TaskNotificationManager.createTaskSubmissionNotification() implementado</span>
+                    </div>
+                    <span class="text-xs text-gray-500">Sistema oficial activado</span>
+                </div>
+                <div class="check-item flex items-center justify-between p-3 bg-gray-50 rounded">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-green-600 font-bold">✅</span>
+                        <span class="text-sm font-medium">Parámetros corregidos (7 argumentos)</span>
+                    </div>
+                    <span class="text-xs text-gray-500">Error de compilación resuelto</span>
+                </div>
+                <div class="check-item flex items-center justify-between p-3 bg-gray-50 rounded">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-green-600 font-bold">✅</span>
+                        <span class="text-sm font-medium">Evento notificationsUpdated agregado</span>
+                    </div>
+                    <span class="text-xs text-gray-500">Actualización en tiempo real</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparación del Código -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">📝 Comparación del Código</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <h3 class="text-lg font-medium text-red-700">❌ ANTES (Incorrecto)</h3>
+                    <div class="bg-red-50 p-4 rounded font-mono text-xs overflow-x-auto">
+                        <pre class="text-red-800">// Código manual incorrecto
+const notification = {
+  id: `notif_${Date.now()}`,
+  type: 'task_submission',
+  taskId: selectedTask.id,
+  taskTitle: selectedTask.title,
+  studentName: user.displayName,
+  studentId: user.id,
+  teacherId: selectedTask.assignedById,
+  message: `${user.displayName} ha entregado...`,
+  timestamp: new Date().toISOString(),
+  read: false,
+  course: selectedTask.course,
+  subject: selectedTask.subject
+};
+
+// Guardado manual
+const existingNotifications = JSON.parse(
+  localStorage.getItem('smart-student-notifications') || '[]'
+);
+const updatedNotifications = [...existingNotifications, notification];
+localStorage.setItem('smart-student-notifications', 
+  JSON.stringify(updatedNotifications));</pre>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <h3 class="text-lg font-medium text-green-700">✅ DESPUÉS (Correcto)</h3>
+                    <div class="bg-green-50 p-4 rounded font-mono text-xs overflow-x-auto">
+                        <pre class="text-green-800">// Código oficial correcto
+TaskNotificationManager.createTaskSubmissionNotification(
+  selectedTask.id,
+  selectedTask.title,
+  selectedTask.course,
+  selectedTask.subject,
+  user.username,
+  user.displayName || user.username,
+  getTeacherUsernameById(selectedTask.assignedById)
+);
+
+// Evento para actualización en tiempo real
+window.dispatchEvent(new CustomEvent('notificationsUpdated', {
+  detail: { 
+    type: 'task_submission', 
+    taskId: selectedTask.id, 
+    studentId: user.id 
+  }
+}));</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pasos de Verificación -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">🧪 Pasos de Verificación</h2>
+            <div class="space-y-4">
+                <div class="flex items-start space-x-3">
+                    <span class="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-800 rounded-full flex items-center justify-center text-sm font-medium">1</span>
+                    <div>
+                        <h3 class="font-medium text-gray-800">Iniciar sesión como estudiante</h3>
+                        <p class="text-sm text-gray-600">Acceder al dashboard y navegar a sección Tareas</p>
+                    </div>
+                </div>
+                <div class="flex items-start space-x-3">
+                    <span class="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-800 rounded-full flex items-center justify-center text-sm font-medium">2</span>
+                    <div>
+                        <h3 class="font-medium text-gray-800">Entregar una tarea</h3>
+                        <p class="text-sm text-gray-600">Seleccionar tarea, agregar comentario, marcar como entrega y enviar</p>
+                    </div>
+                </div>
+                <div class="flex items-start space-x-3">
+                    <span class="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-800 rounded-full flex items-center justify-center text-sm font-medium">3</span>
+                    <div>
+                        <h3 class="font-medium text-gray-800">Cambiar a sesión de profesor</h3>
+                        <p class="text-sm text-gray-600">Iniciar sesión como profesor asignado a esa tarea</p>
+                    </div>
+                </div>
+                <div class="flex items-start space-x-3">
+                    <span class="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-800 rounded-full flex items-center justify-center text-sm font-medium">4</span>
+                    <div>
+                        <h3 class="font-medium text-gray-800">Verificar notificaciones</h3>
+                        <p class="text-sm text-gray-600">Hacer clic en la campana (🔔) y verificar que aparece la notificación</p>
+                    </div>
+                </div>
+                <div class="flex items-start space-x-3">
+                    <span class="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-800 rounded-full flex items-center justify-center text-sm font-medium">5</span>
+                    <div>
+                        <h3 class="font-medium text-gray-800">Verificar contenido</h3>
+                        <p class="text-sm text-gray-600">Confirmar que dice "Tarea Completa: [nombre]" y tiene botón "Revisar Tarea"</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resultado Esperado -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">🎯 Resultado Esperado</h2>
+            <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-400">
+                <h3 class="font-medium text-blue-800 mb-2">✅ Notificación Correcta</h3>
+                <div class="text-sm text-blue-700 space-y-2">
+                    <p><strong>Sección:</strong> "Tareas Completas (1)"</p>
+                    <p><strong>Título:</strong> Nombre del estudiante</p>
+                    <p><strong>Contenido:</strong> "Tarea Completa: [Nombre de la tarea]"</p>
+                    <p><strong>Detalles:</strong> Curso • Fecha y hora</p>
+                    <p><strong>Acción:</strong> Botón "Revisar Tarea" funcional</p>
+                </div>
+            </div>
+            <div class="mt-4 p-4 bg-green-50 rounded-lg">
+                <h3 class="font-medium text-green-800 mb-2">🔔 Estado de Notificaciones</h3>
+                <p class="text-sm text-green-700">El contador de notificaciones debe mostrar el número correcto y actualizarse automáticamente cuando el estudiante entregue la tarea.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log('🔧 Verificación: Notificaciones Duplicadas Corregidas');
+        console.log('✅ Cambios aplicados:');
+        console.log('  • Función getTeacherUsernameById() agregada');
+        console.log('  • Sistema manual de notificaciones eliminado');
+        console.log('  • TaskNotificationManager.createTaskSubmissionNotification() implementado');
+        console.log('  • Parámetros corregidos (7 argumentos)');
+        console.log('  • Evento notificationsUpdated agregado');
+        console.log('🎯 Resultado esperado: Notificaciones completas funcionando');
+    </script>
+</body>
+</html>

@@ -122,7 +122,7 @@ export default function NotificationsPanel({ count: propCount }: NotificationsPa
   };
 
   // 🔧 NUEVA: Función para crear enlaces seguros a tareas
-  const createSafeTaskLink = (taskId: string, additionalParams: string = '', linkText: string = 'Ver tarea'): JSX.Element => {
+  const createSafeTaskLink = (taskId: string, additionalParams: string = '', linkText: string = 'Ver tarea', customClasses?: string): JSX.Element => {
     const taskExists = validateTaskExists(taskId);
     
     if (!taskExists) {
@@ -138,10 +138,13 @@ export default function NotificationsPanel({ count: propCount }: NotificationsPa
     }
     
     const href = `/dashboard/tareas?taskId=${taskId}${additionalParams}&highlight=true`;
+    const defaultClasses = "inline-block mt-2 text-xs text-primary hover:underline";
+    const classes = customClasses || defaultClasses;
+    
     return (
       <Link 
         href={href}
-        className="inline-block mt-2 text-xs text-primary hover:underline"
+        className={classes}
       >
         {linkText}
       </Link>
@@ -580,6 +583,13 @@ export default function NotificationsPanel({ count: propCount }: NotificationsPa
         );
         
         console.log(`[NotificationsPanel] ${user.username} task notifications:`, taskNotifications.length);
+        
+        // Debug específico para entregas de tareas (task_submission)
+        const submissionNotifications = notifications.filter(n => n.type === 'task_submission');
+        console.log(`[NotificationsPanel] ${user.username} task submission notifications:`, submissionNotifications.length);
+        submissionNotifications.forEach((notif, index) => {
+          console.log(`[NotificationsPanel] Submission ${index + 1}: From ${notif.fromDisplayName}, Task: ${notif.taskTitle}, Course: ${notif.course}, Time: ${notif.timestamp}`);
+        });
       }
     } catch (error) {
       console.error('Error loading task notifications:', error);
@@ -1331,7 +1341,7 @@ export default function NotificationsPanel({ count: propCount }: NotificationsPa
                                   <p className="text-sm text-muted-foreground mt-1">
                                     {TaskNotificationManager.getCourseNameById(notif.course)} • {formatDate(notif.timestamp)}
                                   </p>
-                                  {createSafeTaskLink(notif.taskId, '', translate('viewTask'))}
+                                  {createSafeTaskLink(notif.taskId, '', translate('viewTask'), "inline-block mt-2 bg-orange-500 hover:bg-orange-600 text-white px-3 py-1.5 rounded text-xs font-medium transition-colors")}
                                 </div>
                               </div>
                             </div>
@@ -1350,18 +1360,84 @@ export default function NotificationsPanel({ count: propCount }: NotificationsPa
                                 <div className="flex-1">
                                   <div className="flex items-center justify-between">
                                     <p className="font-medium text-sm">
-                                      {notif.fromDisplayName || `${notif.taskTitle} (${TaskNotificationManager.getCourseNameById(notif.course)})`}
+                                      {notif.fromDisplayName || `${notif.taskTitle}`}
                                     </p>
-                                    <Badge variant="outline" className="text-xs border-orange-200 dark:border-orange-600 text-orange-700 dark:text-orange-300 flex flex-col items-center justify-center text-center leading-tight">
-                                      {splitTextForBadge(notif.subject).map((line, index) => (
-                                        <div key={index}>{line}</div>
-                                      ))}
-                                    </Badge>
+                                    <div className="flex items-center gap-2">
+                                      <Badge variant="outline" className="text-xs border-orange-200 dark:border-orange-600 text-orange-700 dark:text-orange-300 flex flex-col items-center justify-center text-center leading-tight">
+                                        {splitTextForBadge(notif.subject).map((line, index) => (
+                                          <div key={index}>{line}</div>
+                                        ))}
+                                      </Badge>
+                                    </div>
                                   </div>
                                   <p className="text-xs text-muted-foreground mt-1">
-                                    {translate('task') || 'Tarea'}
+                                    {translate('task') || 'Tarea'}: {notif.taskTitle}
                                   </p>
-                                  {createSafeTaskLink(notif.taskId, '', translate('viewTask'))}
+                                  <p className="text-xs text-muted-foreground">
+                                    {translate('course') || 'Course'}: {TaskNotificationManager.getCourseNameById(notif.course)}
+                                  </p>
+                                  <div className="mt-2">
+                                    <Link 
+                                      href={`/dashboard/tareas?taskId=${notif.taskId}&highlight=true`}
+                                      className="inline-block bg-orange-500 hover:bg-orange-600 text-white px-3 py-1.5 rounded text-xs font-medium transition-colors"
+                                    >
+                                      {translate('viewTask') || 'Ver Tarea'}
+                                    </Link>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </>
+                      )}
+                      
+                      {/* Sección de entregas de tareas individuales - NUEVA */}
+                      {taskNotifications.filter(notif => notif.type === 'task_submission').length > 0 && (
+                        <>
+                          <div className="px-4 py-2 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-400 dark:border-blue-500">
+                            <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                              {translate('taskSubmissions') || 'Entregas de Tareas'} ({taskNotifications.filter(notif => notif.type === 'task_submission').length})
+                            </h3>
+                          </div>
+                          {taskNotifications
+                            .filter(notif => notif.type === 'task_submission')
+                            .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+                            .map(notif => (
+                            <div key={notif.id} className="p-4 hover:bg-muted/50">
+                              <div className="flex items-start gap-2">
+                                <div className="bg-blue-100 dark:bg-blue-800 p-2 rounded-full">
+                                  <ClipboardCheck className="h-4 w-4 text-blue-600 dark:text-blue-300" />
+                                </div>
+                                <div className="flex-1">
+                                  <div className="flex items-center justify-between">
+                                    <p className="font-medium text-sm">
+                                      {notif.fromDisplayName} entregó su tarea
+                                    </p>
+                                    <div className="flex items-center gap-2">
+                                      <Badge variant="outline" className="text-xs border-blue-200 dark:border-blue-500 text-blue-600 dark:text-blue-400 flex flex-col items-center justify-center text-center leading-tight">
+                                        {splitTextForBadge(notif.subject).map((line, index) => (
+                                          <div key={index}>{line}</div>
+                                        ))}
+                                      </Badge>
+                                      <Badge variant="outline" className="text-xs text-gray-600 dark:text-gray-400">
+                                        {formatDate(notif.timestamp)}
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    {translate('task') || 'Tarea'}: {notif.taskTitle}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {translate('course') || 'Course'}: {TaskNotificationManager.getCourseNameById(notif.course)}
+                                  </p>
+                                  <div className="mt-2">
+                                    <Link 
+                                      href={`/dashboard/tareas?taskId=${notif.taskId}&highlight=true`}
+                                      className="inline-block bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded text-xs font-medium transition-colors"
+                                    >
+                                      {translate('reviewTask') || 'Revisar Tarea'}
+                                    </Link>
+                                  </div>
                                 </div>
                               </div>
                             </div>
@@ -1389,23 +1465,28 @@ export default function NotificationsPanel({ count: propCount }: NotificationsPa
                                 <div className="flex-1">
                                   <div className="flex items-center justify-between">
                                     <p className="font-medium text-sm">
-                                      {notif.fromDisplayName || notif.fromUsername}
+                                      {translate('studentCompletedTask') || 'Tarea completada'}: {notif.taskTitle}
                                     </p>
-                                    <div className="flex items-center gap-2">
-                                      <Badge variant="outline" className="text-xs border-green-200 dark:border-green-500 text-green-600 dark:text-green-400 flex flex-col items-center justify-center text-center leading-tight">
-                                        {splitTextForBadge(notif.subject).map((line, index) => (
-                                          <div key={index}>{line}</div>
-                                        ))}
-                                      </Badge>
-                                    </div>
+                                    <Badge variant="outline" className="text-xs border-green-200 dark:border-green-500 text-green-600 dark:text-green-400 flex flex-col items-center justify-center text-center leading-tight">
+                                      {splitTextForBadge(TaskNotificationManager.getCourseNameById(notif.course)).map((line, index) => (
+                                        <div key={index}>{line}</div>
+                                      ))}
+                                    </Badge>
                                   </div>
-                                  <p className="text-sm text-muted-foreground mt-1">
-                                    {translate('studentCompletedTask') || 'Completó la tarea'}: {notif.taskTitle}
-                                  </p>
                                   <p className="text-xs text-muted-foreground mt-1">
-                                    {TaskNotificationManager.getCourseNameById(notif.course)} • {formatDate(notif.timestamp)}
+                                    {translate('subject') || 'Materia'}: {splitTextForBadge(notif.subject).join(' ')}
                                   </p>
-                                  {createSafeTaskLink(notif.taskId, '', translate('viewTask'))}
+                                  <p className="text-xs text-muted-foreground">
+                                    {translate('course') || 'Curso'}: {TaskNotificationManager.getCourseNameById(notif.course)} • {formatDate(notif.timestamp)}
+                                  </p>
+                                  <div className="mt-2">
+                                    <Link 
+                                      href={`/dashboard/tareas?taskId=${notif.taskId}&highlight=true`}
+                                      className="inline-block bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded text-xs font-medium transition-colors"
+                                    >
+                                      {translate('viewTask') || 'Ver Tarea'}
+                                    </Link>
+                                  </div>
                                 </div>
                               </div>
                             </div>

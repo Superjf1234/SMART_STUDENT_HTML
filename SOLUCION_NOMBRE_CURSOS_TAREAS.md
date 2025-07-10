@@ -96,12 +96,20 @@ Para verificar que la solución funciona correctamente:
 ✅ **SUBIDO A GITHUB**: Commit `0156434` sincronizado con origin/main
 
 ## Información del Commit
-- **Hash**: `0156434`
-- **Mensaje**: "feat: Mostrar nombres de cursos en lugar de códigos en módulo Tareas"
+- **Hash**: `60c5589`
+- **Mensaje**: "feat: Asteriscos rojos en campos obligatorios y corrección vista por curso"
 - **Archivos modificados**: 
-  - `src/app/dashboard/tareas/page.tsx` (224 insertions, 75 deletions)
-  - `SOLUCION_NOMBRE_CURSOS_TAREAS.md` (nuevo archivo)
+  - `src/app/dashboard/tareas/page.tsx` (campos obligatorios y vista por curso)
+  - Múltiples archivos de documentación (.md)
+  - Correcciones de notificaciones y sincronización
 - **Estado**: ✅ Sincronizado con GitHub
+
+## Mejoras Incluidas en el Último Commit
+1. **Asteriscos Rojos**: Todos los campos obligatorios en formularios de tareas ahora muestran asteriscos rojos
+2. **Vista por Curso**: Corrección para mostrar nombres de cursos en lugar de IDs en la vista por curso
+3. **Notificaciones**: Implementación completa de notificaciones automáticas para tareas pendientes
+4. **Sincronización**: Mejora en el conteo y sincronización de notificaciones para profesores
+5. **Documentación**: Creación de archivos de documentación completos para todas las correcciones
 
 ## Cómo Probar
 1. Ir a Módulo Profesor > Tareas
